@@ -1,0 +1,865 @@
+import { useEffect, useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+import axios from 'axios';
+import { BASE_URL } from './constants/config';
+import moment from 'moment';
+// import 'moment/locale/id';
+
+function alallala() {
+
+
+    const [title, setTitle] = useState('')
+
+
+    const [forms, setForms] = useState({});         // state untuk menyimpan data
+    const [loading, setLoading] = useState(true);   // state untuk loading
+    const [error, setError] = useState(null);       // state untuk error
+
+    const [updateId, setUpdateId] = useState(null)
+
+    // const [data, setData] = useState([]);
+
+    const [paginatePage, setPaginatePage] = useState(1);
+    const [paginateLastPage, setPaginateLatesPage] = useState(1);
+    const [paginateFrom, setPaginateFrom] = useState(1)
+
+
+
+    const [formDesign, setFormDesign] = useState({});
+
+
+    const [formDinamis, setFormDinamis] = useState(null)
+
+
+
+
+    useEffect(() => {
+        if (formDesign?.type == 'radio_button') {
+
+
+            if (!Array.isArray(formDesign.options) || formDesign.options.length === 0) {
+                setFormDesign((prev) => ({
+                    ...prev,
+                    options: [
+                        {
+                            "id": 0,
+                            "value": "",
+                            "parent_id": "",
+                            "label": ""
+                        },
+                    ]
+                }))
+            }
+
+
+        } else {
+            if (!Array.isArray(formDesign.options) || formDesign.options.length === 0) {
+                setFormDesign((prev) => ({
+                    ...prev,
+                    options: []
+                }))
+            }
+        }
+    }, [formDesign?.type])
+    console.log(formDesign?.options);
+
+
+
+
+    const fetchData = async (pageNumber = 1) => {
+        try {
+            const response = await axios.get(`${BASE_URL}/forms?page=${pageNumber}`);
+            setForms(response.data.data.data);
+            setPaginateFrom(response.data.data.from)
+            setPaginatePage(response.data.data.current_page)
+            setPaginateLatesPage(response.data.data.last_page);
+
+        } catch (err) {
+            setError('Terjadi kesalahan saat mengambil data');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+        fetchData(paginatePage);
+    }, [paginatePage]);
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>{error}</p>;
+
+
+
+
+    const submitForm = async () => {
+        try {
+            if (updateId != null) {
+                await axios.put(`${BASE_URL}/form/${updateId}`, {
+                    "name": title
+                });
+            } else {
+                await axios.post(`${BASE_URL}/form`, {
+                    "name": title
+                });
+            }
+            setTitle('');
+            fetchData(paginatePage);
+        } catch (err) {
+            alert('Terjadi kegagalan');
+        }
+    };
+
+
+
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber >= 1 && pageNumber <= paginateLastPage) {
+            fetchData(pageNumber);
+        }
+    };
+
+    const findForm = async (id) => {
+        try {
+
+            const data = await axios.get(`${BASE_URL}/form-dinamis/${id}`);
+            setFormDinamis(data.data.data);
+            setTitle('');
+            fetchData(paginatePage);
+        } catch (err) {
+            alert('Terjadi kegagalan');
+        }
+
+    }
+
+
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormDesign(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+
+
+    const handleSubmitDesign = (e) => {
+        e.preventDefault()
+        // console.log(formDinamis);
+        // console.log(formDesign);
+
+
+        const validatedRequired = (data) => {
+            for (const key in data) {
+                console.log(key);
+
+                // const value = data[key];
+                // console.log(value);
+                // if (
+                //     typeof value !== 'object' && // hanya cek string/number/boolean
+                //     (value === null || value === undefined || value === '')
+                // ) {
+                //     alert(`Field "${key}" tidak boleh kosong!`);
+                //     return false;
+                // }
+            }
+
+            return true;
+        };
+
+        console.log(validatedRequired(formDesign));
+
+        let obj = {}
+
+        if (formDesign?.options?.length > 0) {
+            obj.options = formDesign?.options
+        }
+
+
+        // console.log(obj);
+
+        // let payload = {
+        //     "label": "Potensial Kerugian Financial",
+        //     "type": "text",
+        //     "parent_id": formDinamis?.id,
+        //     "description": "Besarnya kerugian finansial yang diperkirakan akan menjadi kerugian Perseroan
+        // }
+
+        // let payload = {
+        //     "label": "Potensial Kerugian Financial",
+        //     "id": "1619062883-xsov-yboj-1hjgvgasn",
+        //     "type": "text",
+        //     "answer": {
+        //         "name": "",
+        //         "value": "6000"
+        //     },
+        //     "supporting_file": {
+        //         "value": "",
+        //         "name": ""
+        //     },
+        //     "parent_id": formDinamis?.id,
+        //     "sub_type": "amount",
+        //     "orm_only": "no",
+        //     "description": "Besarnya kerugian finansial yang diperkirakan akan menjadi kerugian Perseroan",
+        //     "options": [],
+        //     "sub_payloads": []
+        // }
+
+        // const sub_typeCheck = ["amount", "date", "text"];
+
+
+        // let obj = {}
+        // let z = ""
+
+        // if (z == '') {
+        //     obj.type = '';
+        //     const data = sub_typeCheck.filter((d) => d == z)
+        //     if (data.length > 0) {
+        //         obj.sub_type = z
+        //     }
+
+        // }
+
+    }
+
+
+    // console.log(formDesign);
+
+
+    return (
+        <>
+
+            <div className="container-fluid">
+                <h1>TasK </h1>
+
+
+                <div className='row'>
+                    <div className='col-md-5'>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setTitle("")
+                                setUpdateId(null)
+                            }}
+                            className="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                        >
+                            Create Form Title
+                        </button>
+
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Created At</th>
+                                    <th scope="col">action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                {forms?.map((d, i) => {
+                                    return (
+                                        <tr key={i}>
+                                            <th scope="row">{paginateFrom + i}</th>
+                                            <td>{d?.name}</td>
+                                            {/* <td>{d?.created_at}</td> */}
+                                            <td>{moment(d?.created_at).format('dddd, D MMMM YYYY')}</td>
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setTitle(d?.name)
+                                                        setUpdateId(d?.id)
+                                                    }}
+                                                    className="btn btn-warning me-2"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#exampleModal"
+                                                >
+                                                    <EditIcon />
+                                                </button>
+                                                <button type="button" className="btn btn-danger me-2">
+                                                    <TrashIcon />
+                                                </button>
+                                                <button onClick={() => findForm(d?.id)} type="button" className="btn btn-primary">
+                                                    Add Question
+                                                </button>
+
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+
+                            </tbody>
+                        </table>
+                        <nav aria-label="Page navigation example" style={{ marginTop: '20px' }}>
+                            <ul className="pagination">
+                                <li className={`page-item ${paginatePage === 1 ? 'disabled' : ''}`}>
+                                    <button className="page-link" onClick={() => handlePageChange(paginatePage - 1)}>
+                                        Previous
+                                    </button>
+                                </li>
+
+                                {[...Array(paginateLastPage)].map((_, index) => {
+                                    const pageNumber = index + 1;
+                                    return (
+                                        <li
+                                            key={pageNumber}
+                                            className={`page-item ${paginatePage === pageNumber ? 'active' : ''}`}
+                                        >
+                                            <button className="page-link" onClick={() => handlePageChange(pageNumber)}>
+                                                {pageNumber}
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+
+
+                                <li className={`page-item ${paginatePage === paginateLastPage ? 'disabled' : ''}`}>
+                                    <button className="page-link" onClick={() => handlePageChange(paginatePage + 1)}>
+                                        Next
+                                    </button>
+                                </li>
+                            </ul>
+                            {paginatePage === paginateLastPage}
+                        </nav>
+                    </div>
+                    <div className='col-md-7'>
+                        {formDinamis && (
+                            <div className='card bg-secondary'>
+                                <div className='d-flex justify-content-between align-items-center card-header'>
+
+                                    <h5 className="card-title text-light">Create Form Design</h5>
+
+
+
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#staticBackdrop1"
+                                    >
+                                        Add Question
+                                    </button>
+
+                                </div>
+
+                                <div className='card-body px-5'>
+
+                                    <div className="card mt-5">
+                                        <div className="card-header">Form {formDinamis?.name}</div>
+                                        <div className="card-body">
+                                            {/* <h5 className="card-title">Special title treatment</h5> */}
+                                            <>
+                                                {
+                                                    formDinamis?.payloads?.map((d, i) => {
+                                                        return (
+                                                            <div className='mb-5'>
+                                                                <label htmlFor="" className="">{i + 1}.  {d?.label} ({d?.description}) </label>
+
+                                                                <div class="mb-3">
+                                                                    {/* <label htmlFor="">{d?.description}</label> */}
+                                                                    {d?.type == 'radio_button' && d?.options?.map((x, i) => (
+                                                                        <div className="" key={i}>
+                                                                            <input
+                                                                                className="form-check-input me-2"
+                                                                                type="radio"
+                                                                                name="flexRadioDefault"
+                                                                                id="flexRadioDefault1"
+                                                                            />
+                                                                            <label className="form-check-label" htmlFor="flexRadioDefault1">
+                                                                                {x?.label}
+                                                                            </label>
+                                                                        </div>
+
+
+                                                                    ))}
+
+
+                                                                    {d?.type == 'text' && d?.sub_type == 'date' && (
+                                                                        <div className="">
+                                                                            <input type="date" className="form-control" />
+                                                                        </div>
+
+                                                                    )}
+
+                                                                    {d?.type == 'text' && d?.sub_type == 'amount' && (
+                                                                        <div className="">
+                                                                            <input type="number"
+
+                                                                                className="form-control" id="exampleInputPassword1" />
+                                                                        </div>
+                                                                    )}
+
+                                                                    {d?.type == 'text' && d?.sub_type == 'text' && (
+                                                                        <div className="">
+                                                                            <input type="text"
+
+                                                                                className="form-control" id="exampleInputPassword1" />
+                                                                        </div>
+                                                                    )}
+
+
+                                                                    {d?.type == 'checkbox' && d?.options?.map((x) => (
+                                                                        <>
+                                                                            <div className="form-check">
+                                                                                <input
+                                                                                    className="form-check-input"
+                                                                                    type="checkbox"
+                                                                                    defaultValue=""
+                                                                                    id="flexCheckDefault"
+                                                                                />
+                                                                                <label className="form-check-label" htmlFor="flexCheckDefault">
+                                                                                    {x.label}
+                                                                                </label>
+                                                                            </div>
+                                                                        </>
+                                                                    ))}
+
+                                                                    {d?.type == 'long_text' && (
+
+                                                                        <div className="">
+
+                                                                            <textarea
+                                                                                className="form-control"
+
+                                                                                id="floatingTextarea2"
+                                                                                style={{ height: 100 }}
+                                                                                defaultValue={""}
+                                                                            />
+
+                                                                        </div>
+
+                                                                    )}
+
+                                                                </div>
+                                                            </div>
+
+                                                        )
+                                                    })
+                                                }
+                                            </>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        )}
+
+
+
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div
+                className="modal fade"
+                id="staticBackdrop1"
+                data-bs-backdrop="static"
+                data-bs-keyboard="false"
+                tabIndex={-1}
+                aria-labelledby="staticBackdropLabel"
+                aria-hidden="true"
+            >
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <form action="" onSubmit={handleSubmitDesign}>
+                            <div className="modal-header">
+                                <h1 className="modal-title fs-5" id="staticBackdropLabel">
+                                    Form create question
+                                </h1>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                />
+                            </div>
+                            <div className="modal-body ">
+
+                                <>
+
+                                    <div className="mb-3">
+                                        <label htmlFor="label1" className="form-label">
+                                            Label
+                                        </label>
+                                        <input
+                                            required
+                                            type="text"
+                                            onChange={handleChange}
+                                            name='label'
+                                            className="form-control"
+                                            id="label1"
+                                        />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label htmlFor="label1" className="form-label">
+                                            Description
+                                        </label>
+                                        <input
+                                            required
+                                            type="text"
+                                            onChange={handleChange}
+                                            name='description'
+                                            className="form-control"
+                                            id="label1"
+                                        />
+                                    </div>
+
+                                    <div className="mb-3 ">
+                                        <label htmlFor="ssds" className="form-label">
+                                            Type :
+                                        </label>
+                                        <div className="form-check">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                onChange={handleChange}
+                                                name="type"
+                                                value="checkbox"
+                                                id="flex-dinamis1"
+                                            />
+                                            <label className="form-check-label" htmlFor="flex-dinamis1">
+                                                checkbox
+                                            </label>
+                                        </div>
+                                        <div className="form-check">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                onChange={handleChange}
+                                                name="type"
+                                                value="radio_button"
+                                                id="flex-dinamis2"
+                                            />
+                                            <label className="form-check-label" htmlFor="flex-dinamis2">
+                                                radio_button
+                                            </label>
+                                        </div>
+                                        <div className="form-check">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                onChange={handleChange}
+                                                name="type"
+                                                id="flex-dinamis3"
+                                                value="long_text"
+
+                                            />
+                                            <label className="form-check-label" htmlFor="flex-dinamis3">
+                                                long_text
+                                            </label>
+                                        </div>
+                                        <div className="form-check">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                onChange={handleChange}
+                                                name="type"
+                                                value="text"
+                                                id="flex-dinamis4"
+                                            />
+                                            <label className="form-check-label" htmlFor="flex-dinamis4">
+                                                text
+                                            </label>
+                                        </div>
+                                    </div>
+
+
+                                    {formDesign?.type == 'text' && (
+                                        <div className="mb-3 ">
+                                            <label htmlFor="ssds" className="form-label">
+                                                Sub Type :
+                                            </label>
+                                            <div className="form-check">
+                                                <input
+                                                    className="form-check-input"
+                                                    type="radio"
+                                                    onChange={handleChange}
+                                                    name="sub_type"
+                                                    id="sub_type1"
+                                                    value="amount"
+                                                />
+                                                <label className="form-check-label" htmlFor="sub_type1">
+                                                    amount
+                                                </label>
+                                            </div>
+                                            <div className="form-check">
+                                                <input
+                                                    className="form-check-input"
+                                                    type="radio"
+                                                    onChange={handleChange}
+                                                    name="sub_type"
+                                                    id="sub_type2"
+                                                    value="date"
+                                                />
+                                                <label className="form-check-label" htmlFor="sub_type2">
+                                                    date
+                                                </label>
+                                            </div>
+                                            <div className="form-check">
+                                                <input
+                                                    className="form-check-input"
+                                                    type="radio"
+                                                    onChange={handleChange}
+                                                    name="sub_type"
+                                                    id="sub_type3"
+                                                    value="text"
+                                                />
+                                                <label className="form-check-label" htmlFor="sub_type3">
+                                                    text
+                                                </label>
+                                            </div>
+
+                                        </div>
+                                    )}
+
+                                    {formDesign?.type == 'radio_button' && (
+                                        <div className="mb-3 ">
+                                            <label htmlFor="ssds" className="form-label">
+                                                Options:
+                                            </label>
+
+
+                                            <div className='d-flex row'>
+
+                                                <div className='d-flex flex-column row'>
+                                                    {formDesign?.options?.length > 0 ? formDesign?.options?.map((d, i) => {
+                                                        return (
+                                                            <div className="input-group mb-3" key={i}>
+
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control"
+                                                                    placeholder="label"
+                                                                    value={d?.label}
+                                                                    aria-describedby="basic-addon1"
+                                                                    onChange={(e) => {
+                                                                        const updatedOptions = [...formDesign.options];
+                                                                        updatedOptions[i] = {
+                                                                            ...updatedOptions[i],
+                                                                            label: e.target.value
+                                                                        };
+
+                                                                        setFormDesign((prev) => ({
+                                                                            ...prev,
+                                                                            options: updatedOptions
+                                                                        }));
+                                                                    }}
+                                                                />
+                                                                <span className="input-group-text" id="basic-addon1">
+                                                                    <button
+                                                                        onClick={() => {
+
+                                                                            const updatedOptions = formDesign.options?.filter((x) => x.id !== d?.id);
+
+                                                                            console.log(updatedOptions);
+                                                                            setFormDesign((prev) => ({
+                                                                                ...prev,
+                                                                                options: updatedOptions
+                                                                            }));
+                                                                        }}
+
+                                                                        type="button" className="btn btn-sm  btn-danger ">
+                                                                        <TrashIcon />
+                                                                    </button>
+
+                                                                </span>
+                                                            </div>
+                                                        )
+                                                    }) : (
+                                                        <>null</>
+                                                    )}
+
+                                                    <div className='d-flex justify-content-center'>
+                                                        <button
+                                                            onClick={() => {
+                                                                const options = formDesign?.options || [];
+                                                                const lastId = options?.length > 0
+                                                                    ? Math.max(...options.map(opt => typeof opt.id === 'number' ? opt.id : 0))
+                                                                    : 0;
+
+                                                                const newOption = {
+                                                                    id: lastId + 1,
+                                                                    label: "",
+                                                                    value: "",
+                                                                    parent_id: formDesign.id || ""
+                                                                };
+
+                                                                setFormDesign(prev => ({
+                                                                    ...prev,
+                                                                    options: [...options, newOption]
+                                                                }));
+                                                            }}
+                                                            type="button" style={{ width: "200px" }} className="btn btn-sm btn-primary">
+                                                            <PlusIcon /> add options
+                                                        </button>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                    )}
+
+                                </>
+
+
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    data-bs-dismiss="modal"
+                                >
+                                    Close
+                                </button>
+                                <button
+
+                                    type="submit" className="btn btn-primary">
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            <ModalEl setTitle={setTitle} title={title} submitForm={submitForm} />
+
+
+
+
+
+        </>
+    )
+}
+
+export default alallala
+
+
+const ModalEl = ({ setTitle, title, submitForm }) => {
+    return (
+
+        <div
+            className="modal fade"
+            id="exampleModal"
+            tabIndex={-1}
+            aria-labelledby="exampleModalLabel"
+            aria-hidden="true"
+        >
+            <div className="modal-dialog">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <h1 className="modal-title fs-5" id="exampleModalLabel">
+                            Form
+                        </h1>
+                        <button
+                            type="button"
+                            className="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        />
+                    </div>
+                    <div className="modal-body border ">
+
+                        <div className='container'>
+                            <div className="mb-3">
+                                <label htmlFor="exampleInputEmail1" className="form-label">
+                                    Judul
+                                </label>
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    name='title'
+                                    className="form-control"
+                                    id="exampleInputEmail1"
+                                    aria-describedby="emailHelp"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            data-bs-dismiss="modal"
+                        >
+                            Close
+                        </button>
+                        <button onClick={() => submitForm()} type="button" className="btn btn-primary" data-bs-dismiss="modal">
+                            Save changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+
+
+
+const EditIcon = ({ width = 24, height = 24, color = 'currentColor' }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke={color}
+        strokeWidth={2}
+        width={width}
+        height={height}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.232 5.232l3.536 3.536M9 11l6.586-6.586a2 2 0 012.828 0l1.172 1.172a2 2 0 010 2.828L13 15l-6.586.586L9 11z"
+        />
+    </svg>
+);
+
+const TrashIcon = ({ width = 24, height = 24, color = 'currentColor' }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={width}
+        height={height}
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke={color}
+        strokeWidth={2}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7m4-2h2a1 1 0 011 1v1H8V6a1 1 0 011-1z"
+        />
+    </svg>
+);
+
+
+const PlusIcon = ({ size = 24, color = 'white' }) => {
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+    );
+};
