@@ -52,7 +52,7 @@ class FormController extends Controller
             $fieldId = $item['id'];
             $answer = $item['answer'];
 
-    
+
             Payload::where('id', $fieldId)
                 ->update([
                     'answer' => $answer,

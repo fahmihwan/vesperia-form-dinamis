@@ -56,7 +56,7 @@ class FormDesignController extends Controller
 
             $payload =  Payload::create([
                 "type" => $validated['type'],
-                "answer"=> $validated['answer'],
+                "answer" => $validated['answer'],
                 "parent_id" => $form->id,
                 "label" => $validated['label'],
                 'description' => $validated['description'],
@@ -84,7 +84,7 @@ class FormDesignController extends Controller
             return response()->json([
                 'message' => 'Design created successfully.',
                 "data" => $request->all()
-            ], 200);
+            ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -124,7 +124,6 @@ class FormDesignController extends Controller
             return response()->json([
                 'message' => 'Design deleted successfully'
             ], 204);
-            
         } catch (\Exception $e) {
             DB::rollBack();
 

@@ -17,7 +17,8 @@ class PayloadFactory extends Factory
     public function definition(): array
     {
         return [
-            "label"=> $this->faker->randomElement(['judul A', 'judul B', 'judul C']),
+            "label" => $this->faker->randomElement(['judul A', 'judul B', 'judul C']),
+            // 'type' => 'text'
         ];
     }
 }
