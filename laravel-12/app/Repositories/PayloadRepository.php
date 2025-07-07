@@ -11,4 +11,14 @@ class PayloadRepository implements PayloadRepositoryInterface
     {
         return Payload::where('id', $id)->update(['answer' => $answer]);
     }
+
+    public function create(array $data): Payload
+    {
+        return Payload::create($data);
+    }
+
+    public function find($id): ?Payload
+    {
+        return Payload::find($id);
+    }
 }

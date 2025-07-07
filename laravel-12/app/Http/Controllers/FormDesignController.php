@@ -5,11 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Form;
 use App\Models\Option;
 use App\Models\Payload;
+use App\Repositories\Interfaces\FormRepositoryInterface;
+use App\Repositories\Interfaces\PayloadRepositoryInterface;
+use App\Services\FormDesignService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class FormDesignController extends Controller
 {
+
+    public function __construct(
+        private FormDesignService $designService
+    ) {}
+
     public function storeDesign(Request $request)
     {
 
@@ -95,41 +103,20 @@ class FormDesignController extends Controller
         }
     }
 
+
     public function deleteDesign($id)
     {
-        // $payload = Payload::find($id);
-        // return response()->json([
-        //     'message' => $payload->id
-        // ], 200);
 
         try {
-            $payload = Payload::find($id);
-
-            if (!$payload) {
-                return response()->json([
-                    'message' => 'Parent form not found.'
-                ], 404);
-            }
-
-            // $opt = Option::where('parent_id', $payload->id)->exists();
-            // if ($opt) {
-            //     Option::where('parent_id', $payload->id)->delete();
-            // };
-
-
-            $payload->delete();
-            // Payload::delete($payload->id);
-            DB::commit();
+            $this->designService->deleteDesign($id);
 
             return response()->json([
                 'message' => 'Design deleted successfully'
             ], 204);
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return response()->json([
-                'message' => 'Failed to delete.',
-                'error'   => $e->getMessage()
+                'message' => 'Failed to delete design.',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

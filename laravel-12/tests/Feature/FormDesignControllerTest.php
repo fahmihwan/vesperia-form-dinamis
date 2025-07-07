@@ -45,7 +45,7 @@ class FormDesignControllerTest extends TestCase
             ]
         ]);
 
-        // dump($response->json());
+        dump($response->json());
 
         $response->assertStatus(201)
             ->assertJsonFragment([
